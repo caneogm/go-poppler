@@ -158,3 +158,27 @@ func (p *Page) ConvertToSVG(filename string){
 	surface.ShowPage()
 	surface.Destroy()
 }
+
+func (p *Page) GetAnnotMappings() []AnnotMapping {
+	var annotGlist *C.struct__GList = C.poppler_page_get_annot_mapping(p.p)
+	var ams []AnnotMapping
+
+	if annotGlist == nil {
+		return nil
+	}
+
+	defer C.g_list_free(annotGlist)
+
+	for ; annotGlist != nil; annotGlist = annotGlist.next {
+		annotPtr := (*C.struct__PopplerAnnotMapping)(annotGlist.data)
+
+		am := AnnotMapping{
+			a: annotPtr,
+			Page: *p,
+		}
+
+		ams = append(ams, am)
+	}
+
+	return ams
+}
